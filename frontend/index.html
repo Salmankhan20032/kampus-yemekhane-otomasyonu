@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f5f0" />
+    <title>Kampüs Sofrası · Yemekhane</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <main id="login-screen" class="login-screen" hidden>
+      <section class="login-card">
+        <div class="brand-mark">KS</div>
+        <span class="eyebrow">KAMPÜS YAŞAMI</span>
+        <h1>Günün güzel<br />başlasın.</h1>
+        <p class="muted">Menünü keşfet, yerini ayır, afiyet olsun.</p>
+        <form id="login-form" class="stack">
+          <label
+            >E-posta<input
+              name="email"
+              type="email"
+              autocomplete="username"
+              placeholder="ogrenci@kampus.edu"
+              required
+          /></label>
+          <label
+            >Şifre<input
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              required
+          /></label>
+          <button class="button button-dark button-wide" type="submit">
+            Giriş yap <span>↗</span>
+          </button>
+        </form>
+        <div class="demo-note">
+          <b>Demo hesabı</b><span>ogrenci@kampus.edu · password</span
+          ><span>personel@kampus.edu · password</span
+          ><span>yonetici@kampus.edu · password</span>
+        </div>
+      </section>
+      <aside class="login-art">
+        <div class="art-label">BUGÜNÜN MENÜSÜ · TAZE VE DENGELİ</div>
+        <div class="art-orbit orbit-one"></div>
+        <div class="art-orbit orbit-two"></div>
+        <div class="food-emoji">🥗</div>
+        <div class="art-caption">
+          <span>İyi yemek,</span><br />iyi bir günün başlangıcı.
+        </div>
+        <div class="art-sticker">Taze<br /><strong>her gün</strong></div>
+      </aside>
+    </main>
+
+    <div id="app-shell" class="app-shell" hidden>
+      <aside class="sidebar">
+        <a class="brand" href="#menu"
+          ><span class="brand-mark small">KS</span
+          ><span>Kampüs<br /><b>Sofrası</b></span></a
+        >
+        <div class="side-label">MENÜ</div>
+        <nav id="main-nav">
+          <button data-page="menu" class="nav-item active">
+            <span>◈</span> Menü
+          </button>
+          <button data-page="reservations" class="nav-item">
+            <span>▤</span> Rezervasyonlarım
+          </button>
+          <button data-page="balance" class="nav-item">
+            <span>◉</span> Bakiyem
+          </button>
+          <button data-page="reviews" class="nav-item">
+            <span>☆</span> Değerlendirme
+          </button>
+          <button data-page="profile" class="nav-item">
+            <span>♡</span> Alerjen profilim
+          </button>
+          <button data-page="admin" class="nav-item admin-only" hidden>
+            <span>▦</span> Yönetim
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="support-card">
+            <span class="support-icon">✳</span><b>Bugün ne yesem?</b>
+            <p>Haftalık menüne göz at, masanı ayırt.</p>
+            <button data-page="menu" class="text-button">
+              Menüyü keşfet ↗
+            </button>
+          </div>
+          <button id="logout" class="nav-item logout">
+            <span>↪</span> Çıkış yap
+          </button>
+        </div>
+      </aside>
+      <section class="main-column">
+        <header class="topbar">
+          <button id="mobile-menu" class="mobile-menu" aria-label="Menüyü aç">
+            ☰
+          </button>
+          <div class="breadcrumb">
+            Kampüs <span>/</span> <b id="crumb">Günün menüsü</b>
+          </div>
+          <div class="topbar-right">
+            <span class="today" id="today"></span
+            ><button class="avatar" id="avatar">Ö</button>
+          </div>
+        </header>
+        <div id="view" class="content"></div>
+        <footer>Güzel bir gün, güzel bir öğünle başlar. <span>☀</span></footer>
+      </section>
+    </div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

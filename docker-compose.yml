@@ -1,0 +1,146 @@
+name: kampus-yemekhane
+services:
+  frontend:
+    image: httpd:2.4-alpine
+    ports: ["8080:80"]
+    volumes:
+      - ./frontend:/usr/local/apache2/htdocs:ro
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+    depends_on:
+      application:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+  application:
+    build: .
+    environment:
+      TZ: Europe/Istanbul
+      PORT: 3000
+      DB_HOST: mysql-primary
+      DB_REPLICA_HOST: mysql-replica
+      DB_PORT: 3306
+      DB_REPLICA_PORT: 3306
+      DB_USER: yemekhane
+      DB_PASSWORD: ${MYSQL_APP_PASSWORD:-local-app-password}
+      DB_NAME: yemekhane
+      REDIS_URL: redis://redis:6379
+      SESSION_SECRET: ${SESSION_SECRET:-development-session-secret-change-this}
+      SESSION_SECURE: "false"
+    expose: ["3000"]
+    depends_on:
+      mysql-primary:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+      replica-setup:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+  mysql-primary:
+    image: mysql:8.4
+    command:
+      [
+        "--server-id=1",
+        "--log-bin=mysql-bin",
+        "--binlog-format=ROW",
+        "--gtid-mode=ON",
+        "--enforce-gtid-consistency=ON",
+        "--binlog-expire-logs-seconds=604800",
+      ]
+    environment:
+      TZ: Europe/Istanbul
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-password}
+      MYSQL_DATABASE: yemekhane
+      MYSQL_USER: yemekhane
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-local-app-password}
+    ports: ["3307:3306"]
+    volumes:
+      - mysql-primary-data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - ./db/migrations:/migrations:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  mysql-replica:
+    image: mysql:8.4
+    command:
+      [
+        "--server-id=2",
+        "--relay-log=relay-bin",
+        "--read-only=ON",
+        "--gtid-mode=ON",
+        "--enforce-gtid-consistency=ON",
+      ]
+    environment:
+      TZ: Europe/Istanbul
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-password}
+    ports: ["3308:3306"]
+    volumes:
+      - mysql-replica-data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  replica-setup:
+    image: mysql:8.4
+    depends_on:
+      mysql-primary:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-password}
+    volumes:
+      - ./db/replica-setup.sh:/replica-setup.sh:ro
+    entrypoint: ["bash", "/replica-setup.sh"]
+    restart: "no"
+  redis:
+    image: redis:7-alpine
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--maxmemory",
+        "128mb",
+        "--maxmemory-policy",
+        "allkeys-lru",
+      ]
+    ports: ["6379:6379"]
+    volumes: ["redis-data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  mysql-primary-data:
+  mysql-replica-data:
+  redis-data:
