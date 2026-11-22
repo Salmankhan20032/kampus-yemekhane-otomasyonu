@@ -63,5 +63,5 @@ test("compose defines the six required services and health-gated startup", () =>
     compose.services.application.depends_on["replica-setup"].condition,
     "service_completed_successfully",
   );
-  assert.equal(compose.services.frontend.ports[0], "8080:80");
+  assert.equal(compose.services.frontend.ports[0], "${WEB_PORT:-8080}:80");
 });

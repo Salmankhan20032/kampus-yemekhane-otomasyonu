@@ -88,10 +88,13 @@ async function reservations(userId) {
   );
 }
 
-async function balance(userId) {
+async function balance(userId, fromSource = false) {
+  const read = fromSource
+    ? (sql, params) => db.writer.execute(sql, params).then(([rows]) => rows)
+    : db.read;
   const [users, ledger] = await Promise.all([
-    db.read("SELECT bakiye balance FROM kullanicilar WHERE id=?", [userId]),
-    db.read(
+    read("SELECT bakiye balance FROM kullanicilar WHERE id=?", [userId]),
+    read(
       "SELECT id,tur type,tutar amount,aciklama description,created_at createdAt FROM bakiye_hareketleri WHERE kullanici_id=? ORDER BY created_at DESC,id DESC LIMIT 50",
       [userId],
     ),
@@ -219,7 +222,7 @@ async function dishCatalog() {
 }
 
 async function userById(id) {
-  const rows = await db.read(
+  const [rows] = await db.writer.execute(
     "SELECT id,ad_soyad,email,rol,bakiye FROM kullanicilar WHERE id=?",
     [id],
   );

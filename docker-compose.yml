@@ -2,7 +2,7 @@ name: kampus-yemekhane
 services:
   frontend:
     image: httpd:2.4-alpine
-    ports: ["8080:80"]
+    ports: ["${WEB_PORT:-8080}:80"]
     volumes:
       - ./frontend:/usr/local/apache2/htdocs:ro
       - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
@@ -66,6 +66,7 @@ services:
     environment:
       TZ: Europe/Istanbul
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-password}
+      MYSQL_ONETIME_PASSWORD: ""
       MYSQL_DATABASE: yemekhane
       MYSQL_USER: yemekhane
       MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-local-app-password}
@@ -96,6 +97,7 @@ services:
     environment:
       TZ: Europe/Istanbul
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-password}
+      MYSQL_ONETIME_PASSWORD: ""
     ports: ["3308:3306"]
     volumes:
       - mysql-replica-data:/var/lib/mysql

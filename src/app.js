@@ -12,6 +12,7 @@ redis.on("error", (error) => console.error("Redis connection:", error.message));
 
 const app = express();
 app.disable("x-powered-by");
+app.set("trust proxy", 1);
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -276,7 +277,7 @@ app.post(
     ]);
     req.session.user = await services.userById(req.session.user.id);
     res.json({
-      ...(await services.balance(req.session.user.id)),
+      ...(await services.balance(req.session.user.id, true)),
       message: "Bakiye yüklendi.",
     });
   }),
